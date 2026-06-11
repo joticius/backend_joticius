@@ -1,6 +1,6 @@
 {
-  "name": "cargamesta/ms-conductores",
-  "description": "Microservicio de conductores - CargamEsta",
+  "name": "cargamesta/ms-vehiculos",
+  "description": "Microservicio de vehículos - CargamEsta",
   "type": "project",
   "require": {
     "php": ">=7.4"
