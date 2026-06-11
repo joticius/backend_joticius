@@ -30,8 +30,11 @@ DB_PORT=3306
 DB_NAME=cargamesta
 DB_USER=root
 DB_PASSWORD=
+APP_ENV=local
 APP_DEBUG=true
 ```
+
+> Nota: cada microservicio puede tener su propio archivo `.env` local en su carpeta raíz. Si existe, éste se usa para carga de configuración en lugar de valores globales.
 
 ## Ejecución local
 Abrir una terminal por microservicio:
