@@ -19,9 +19,7 @@ class AuthMiddleware implements MiddlewareInterface
             return $this->unauthorized('Token no proporcionado');
         }
 
-        // Extraer token del header "Bearer TOKEN"
         $parts = explode(' ', $authHeader);
-
         if (count($parts) !== 2 || $parts[0] !== 'Bearer') {
             return $this->unauthorized('Formato de token inválido');
         }
@@ -29,19 +27,13 @@ class AuthMiddleware implements MiddlewareInterface
         $token = $parts[1];
 
         try {
-            // Decodificar token
-            $decoded = JWT::decode(
-                $token,
-                new Key(Settings::getJwtSecret(), Settings::getJwtAlgorithm())
-            );
+            $decoded = JWT::decode($token, new Key(Settings::getJwtSecret(), Settings::getJwtAlgorithm()));
 
-            // Agregar información al request
             $request = $request
-                ->withAttribute('usuario_id', $decoded->usuario_id)
-                ->withAttribute('rol', $decoded->rol);
+                ->withAttribute('usuario_id', $decoded->usuario_id ?? null)
+                ->withAttribute('rol', $decoded->rol ?? null);
 
             return $handler->handle($request);
-
         } catch (\Firebase\JWT\ExpiredException $e) {
             return $this->unauthorized('Token expirado');
         } catch (\Firebase\JWT\SignatureInvalidException $e) {
@@ -54,14 +46,8 @@ class AuthMiddleware implements MiddlewareInterface
     private function unauthorized($message): Response
     {
         $response = new \Slim\Psr7\Response();
-        $data = [
-            'success' => false,
-            'message' => $message
-        ];
-
+        $data = ['success' => false, 'message' => $message];
         $response->getBody()->write(json_encode($data));
-        return $response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(401);
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
     }
 }

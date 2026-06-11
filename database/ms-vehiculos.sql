@@ -23,7 +23,6 @@ marca,
 estado,
 created_at,
 updated_at
-SQL
 )
 VALUES
 (

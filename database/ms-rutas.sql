@@ -79,5 +79,4 @@ VALUES
 'programado',
 NOW(),
 NOW()
-SQL
 );

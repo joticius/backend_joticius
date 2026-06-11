@@ -3,7 +3,10 @@
   "description": "Microservicio de autenticación - CargamEsta",
   "type": "project",
   "require": {
-    "php": ">=7.4"
+    "php": ">=7.4",
+    "slim/slim": "^4.0",
+    "slim/psr7": "^1.5",
+    "firebase/php-jwt": "^6.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^9"

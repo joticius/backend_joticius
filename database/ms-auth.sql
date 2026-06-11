@@ -26,7 +26,6 @@ updated_at
 VALUES
 (
 'Administrador General',
-SQL
 'admin@logitrans.com',
 'admin',
 'admin123',
