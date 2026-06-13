@@ -15,8 +15,26 @@ class VehiculosController
 
     public function health(Request $request, Response $response)
     {
-        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_vehiculos operativo', 'timestamp' => date('Y-m-d H:i:s')]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        try {
+            // Intentar obtener un vehículo para verificar conexión a BD
+            Vehiculo::query()->limit(1)->get();
+
+            $response->getBody()->write(json_encode([
+                'success' => true,
+                'message' => 'ms_vehiculos operativo',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'db_status' => 'conectado'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Error del servidor',
+                'error' => $e->getMessage(),
+                'timestamp' => date('Y-m-d H:i:s')
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
     }
 
     public function index(Request $request, Response $response)

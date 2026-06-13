@@ -15,8 +15,26 @@ class ViajesController
 
     public function health(Request $request, Response $response)
     {
-        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_viajes operativo', 'timestamp' => date('Y-m-d H:i:s')]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        try {
+            // Intentar obtener un viaje para verificar conexión a BD
+            Viaje::query()->limit(1)->get();
+
+            $response->getBody()->write(json_encode([
+                'success' => true,
+                'message' => 'ms_viajes operativo',
+                'timestamp' => date('Y-m-d H:i:s'),
+                'db_status' => 'conectado'
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+        } catch (\Exception $e) {
+            $response->getBody()->write(json_encode([
+                'success' => false,
+                'message' => 'Error del servidor',
+                'error' => $e->getMessage(),
+                'timestamp' => date('Y-m-d H:i:s')
+            ]));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
+        }
     }
 
     public function index(Request $request, Response $response)
