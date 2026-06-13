@@ -39,15 +39,23 @@ $app = AppFactory::create();
 // MIDDLEWARE GLOBAL
 // ============================================================
 
-// CORS Middleware
+// ============ CORS AQUÍ ============
 $app->add(function (Request $request, $handler) {
     $response = $handler->handle($request);
-
     return $response
         ->withHeader('Access-Control-Allow-Origin', '*')
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         ->withHeader('Access-Control-Max-Age', '3600');
+});
+
+// PREFLIGHT OPTIONS - AQUÍ VA EL FIX
+$app->options('/{routes:.+}', function (Request $request, Response $response) {
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        ->withStatus(200);
 });
 
 // Manejar preflight OPTIONS

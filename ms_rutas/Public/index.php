@@ -1,6 +1,4 @@
 <?php
-// Public index for ms_rutas
-
 $dotenvPath = __DIR__ . '/../.env';
 if (file_exists($dotenvPath)) {
     $dotenv = parse_ini_file($dotenvPath);
@@ -17,32 +15,9 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-$app = AppFactory::create();// CORS
-$app->add(function ($request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-});
+$app = AppFactory::create();
 
-$app->options('/{routes:.+}', function ($request, $response) {
-    return $response;
-});
-
-$app->add(function (Request $request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-});
-
-$app->options('/{routes:.+}', function (Request $request, Response $response) {
-    return $response;
-});
-
-// CORS
+// CORS - MIDDLEWARE
 $app->add(function (Request $request, $handler) {
     $response = $handler->handle($request);
     return $response
@@ -52,6 +27,16 @@ $app->add(function (Request $request, $handler) {
         ->withHeader('Access-Control-Max-Age', '3600');
 });
 
+// PREFLIGHT OPTIONS
+$app->options('/{routes:.+}', function (Request $request, Response $response) {
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        ->withHeader('Access-Control-Max-Age', '3600')
+        ->withStatus(200);
+});
+// Manejar OPTIONS
 $app->options('/{routes:.+}', function (Request $request, Response $response) {
     return $response;
 });

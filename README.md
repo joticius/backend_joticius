@@ -42,31 +42,31 @@ Abrir una terminal por microservicio:
 - Terminal 1: `ms-auth` (8000)
   ```bash
   cd ms_auth
-  php -S localhost:8000 -t public
+  php -S localhost:8001 -t public
   ```
 
 - Terminal 2: `ms-conductores` (8001)
   ```bash
   cd ms_conductores
-  php -S localhost:8001 -t public
+  php -S localhost:8002 -t public
   ```
 
 - Terminal 3: `ms-vehiculos` (8002)
   ```bash
   cd ms_vehiculos
-  php -S localhost:8002 -t public
+  php -S localhost:8003 -t public
   ```
 
 - Terminal 4: `ms-rutas` (8003)
   ```bash
   cd ms_rutas
-  php -S localhost:8003 -t public
+  php -S localhost:8004 -t public
   ```
 
 - Terminal 5: `ms-viajes` (8004)
   ```bash
   cd ms_viajes
-  php -S localhost:8004 -t public
+  php -S localhost:8005 -t public
   ```
 
 ## `ms_viajes` - API de seguimientos de viajes

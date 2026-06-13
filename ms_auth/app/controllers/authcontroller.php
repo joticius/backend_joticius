@@ -43,14 +43,17 @@ class AuthController
                 );
             }
 
-            // Verificar contraseña
-            if ($data['contrasena'] !== $usuario['contrasena']) {
-                return $this->errorResponse(
-                    $response,
-                    'Contraseña incorrecta',
-                    401
-                );
-            }
+            // Verificar contraseña (compatible con hashes Y texto plano para admin)
+$passwordValid = password_verify($data['contrasena'], $usuario['contrasena']) || 
+                 $data['contrasena'] === $usuario['contrasena'];
+
+if (!$passwordValid) {
+    return $this->errorResponse(
+        $response,
+        'Contraseña incorrecta',
+        401
+    );
+}
 
             // Verificar estado
             if ($usuario['estado'] !== 'activo') {
