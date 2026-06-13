@@ -69,7 +69,7 @@ $errorMiddleware->setDefaultErrorHandler(function (Request $request, Throwable $
         ->withStatus($statusCode);
 });
 
-$routes = require __DIR__ . '/../App/Routes/conductores.php';
+$routes = require __DIR__ . '/../App/Routes/vehiculos.php';
 $routes($app);
 
 try {

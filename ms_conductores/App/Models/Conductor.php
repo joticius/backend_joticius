@@ -14,26 +14,31 @@ class Conductor
 
     public function getAll()
     {
-        $stmt = $this->db->prepare('SELECT id, nombre, licencia, telefono, estado, created_at FROM conductores');
+        $stmt = $this->db->prepare('SELECT id, nombres, apellidos, documento, telefono, correo, numero_licencia, categoria_licencia, fecha_vencimiento_licencia, estado, created_at FROM conductores');
         $stmt->execute();
         return $stmt->fetchAll();
     }
 
     public function findById($id)
     {
-        $stmt = $this->db->prepare('SELECT id, nombre, licencia, telefono, estado, created_at FROM conductores WHERE id = ?');
+        $stmt = $this->db->prepare('SELECT id, nombres, apellidos, documento, telefono, correo, numero_licencia, categoria_licencia, fecha_vencimiento_licencia, estado, created_at FROM conductores WHERE id = ?');
         $stmt->execute([$id]);
         return $stmt->fetch();
     }
 
     public function create($data)
     {
-        $stmt = $this->db->prepare('INSERT INTO conductores (nombre, licencia, telefono, estado, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())');
+        $stmt = $this->db->prepare('INSERT INTO conductores (nombres, apellidos, documento, telefono, correo, numero_licencia, categoria_licencia, fecha_vencimiento_licencia, estado, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())');
         return $stmt->execute([
-            $data['nombre'] ?? null,
-            $data['licencia'] ?? null,
+            $data['nombres'] ?? null,
+            $data['apellidos'] ?? null,
+            $data['documento'] ?? null,
             $data['telefono'] ?? null,
-            $data['estado'] ?? 'activo'
+            $data['correo'] ?? null,
+            $data['numero_licencia'] ?? null,
+            $data['categoria_licencia'] ?? null,
+            $data['fecha_vencimiento_licencia'] ?? null,
+            $data['estado'] ?? 'disponible'
         ]);
     }
 
@@ -42,9 +47,14 @@ class Conductor
         $fields = [];
         $values = [];
 
-        if (isset($data['nombre'])) { $fields[] = 'nombre = ?'; $values[] = $data['nombre']; }
-        if (isset($data['licencia'])) { $fields[] = 'licencia = ?'; $values[] = $data['licencia']; }
+        if (isset($data['nombres'])) { $fields[] = 'nombres = ?'; $values[] = $data['nombres']; }
+        if (isset($data['apellidos'])) { $fields[] = 'apellidos = ?'; $values[] = $data['apellidos']; }
+        if (isset($data['documento'])) { $fields[] = 'documento = ?'; $values[] = $data['documento']; }
         if (isset($data['telefono'])) { $fields[] = 'telefono = ?'; $values[] = $data['telefono']; }
+        if (isset($data['correo'])) { $fields[] = 'correo = ?'; $values[] = $data['correo']; }
+        if (isset($data['numero_licencia'])) { $fields[] = 'numero_licencia = ?'; $values[] = $data['numero_licencia']; }
+        if (isset($data['categoria_licencia'])) { $fields[] = 'categoria_licencia = ?'; $values[] = $data['categoria_licencia']; }
+        if (isset($data['fecha_vencimiento_licencia'])) { $fields[] = 'fecha_vencimiento_licencia = ?'; $values[] = $data['fecha_vencimiento_licencia']; }
         if (isset($data['estado'])) { $fields[] = 'estado = ?'; $values[] = $data['estado']; }
 
         if (empty($fields)) return false;
