@@ -44,7 +44,7 @@ class AuthController
             }
 
             // Verificar contraseña
-            if (!Usuario::verifyPassword($data['contrasena'], $usuario['contrasena'])) {
+            if ($data['contrasena'] !== $usuario['contrasena']) {
                 return $this->errorResponse(
                     $response,
                     'Contraseña incorrecta',
