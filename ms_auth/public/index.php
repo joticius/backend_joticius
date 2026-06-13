@@ -4,7 +4,7 @@
  * CargamEsta - Sistema de Transporte de Carga
  * 
  * Punto de entrada principal
- * Ejecutar con: php -S localhost:8000 -t public/
+ * Ejecutar con: php -S localhost:8001 -t public/
  */
 
 // ============================================================
@@ -27,7 +27,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 // CREAR APLICACIÓN SLIM
 // ============================================================
 use Slim\Factory\AppFactory;
-use Slim\Middleware\ErrorMiddleware;
 use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpMethodNotAllowedException;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -39,7 +38,17 @@ $app = AppFactory::create();
 // MIDDLEWARE GLOBAL
 // ============================================================
 
-// ============ CORS AQUÍ ============
+// 1️⃣ PRIMERO: ruta OPTIONS para preflight (una sola vez, con headers completos)
+$app->options('/{routes:.+}', function (Request $request, Response $response) {
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        ->withHeader('Access-Control-Max-Age', '3600')
+        ->withStatus(200);
+});
+
+// 2️⃣ SEGUNDO: middleware CORS para todas las demás respuestas
 $app->add(function (Request $request, $handler) {
     $response = $handler->handle($request);
     return $response
@@ -49,23 +58,9 @@ $app->add(function (Request $request, $handler) {
         ->withHeader('Access-Control-Max-Age', '3600');
 });
 
-// PREFLIGHT OPTIONS - AQUÍ VA EL FIX
-$app->options('/{routes:.+}', function (Request $request, Response $response) {
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        ->withStatus(200);
-});
-
-// Manejar preflight OPTIONS
-$app->options('/{routes:.+}', function (Request $request, Response $response) {
-    return $response;
-});
-
-// Error handling middleware
+// 3️⃣ TERCERO: error middleware (con headers CORS incluidos)
 $errorMiddleware = $app->addErrorMiddleware(
-    $_ENV['APP_DEBUG'] === 'true',
+    ($_ENV['APP_DEBUG'] ?? 'false') === 'true',
     true,
     true
 );
@@ -83,12 +78,15 @@ $errorMiddleware->setDefaultErrorHandler(function (Request $request, Throwable $
     $data = [
         'success' => false,
         'message' => 'Error del servidor',
-        'error' => $displayErrorDetails ? $exception->getMessage() : 'Erro interno'
+        'error' => $displayErrorDetails ? $exception->getMessage() : 'Error interno'
     ];
 
     $response->getBody()->write(json_encode($data));
     return $response
         ->withHeader('Content-Type', 'application/json')
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         ->withStatus($statusCode);
 });
 
@@ -107,7 +105,7 @@ try {
     echo json_encode([
         'success' => false,
         'message' => 'Error fatal en aplicación',
-        'error' => $_ENV['APP_DEBUG'] === 'true' ? $e->getMessage() : 'Error interno'
+        'error' => ($_ENV['APP_DEBUG'] ?? 'false') === 'true' ? $e->getMessage() : 'Error interno'
     ]);
     http_response_code(500);
 }

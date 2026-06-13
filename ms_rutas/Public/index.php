@@ -17,17 +17,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 $app = AppFactory::create();
 
-// CORS - MIDDLEWARE
-$app->add(function (Request $request, $handler) {
-    $response = $handler->handle($request);
-    return $response
-        ->withHeader('Access-Control-Allow-Origin', '*')
-        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        ->withHeader('Access-Control-Max-Age', '3600');
-});
-
-// PREFLIGHT OPTIONS
+// PREFLIGHT OPTIONS — solo una vez, con los headers completos
 $app->options('/{routes:.+}', function (Request $request, Response $response) {
     return $response
         ->withHeader('Access-Control-Allow-Origin', '*')
@@ -36,9 +26,15 @@ $app->options('/{routes:.+}', function (Request $request, Response $response) {
         ->withHeader('Access-Control-Max-Age', '3600')
         ->withStatus(200);
 });
-// Manejar OPTIONS
-$app->options('/{routes:.+}', function (Request $request, Response $response) {
-    return $response;
+
+// CORS middleware — debe agregarse DESPUÉS de las rutas OPTIONS
+$app->add(function (Request $request, $handler) {
+    $response = $handler->handle($request);
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        ->withHeader('Access-Control-Max-Age', '3600');
 });
 
 $errorMiddleware = $app->addErrorMiddleware(
@@ -63,11 +59,17 @@ $errorMiddleware->setDefaultErrorHandler(function (Request $request, Throwable $
         'error' => $displayErrorDetails ? $exception->getMessage() : 'Error interno'
     ];
 
+    // ✅ Headers CORS también en respuestas de error
     $response->getBody()->write(json_encode($data));
-    return $response->withHeader('Content-Type', 'application/json')->withStatus($statusCode);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+        ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        ->withStatus($statusCode);
 });
 
-$routes = require __DIR__ . '/../App/Routes/rutas.php';
+$routes = require __DIR__ . '/../App/Routes/conductores.php';
 $routes($app);
 
 try {
