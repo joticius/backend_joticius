@@ -17,7 +17,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 $app = AppFactory::create();
 
-// 1️⃣ PRIMERO: ruta OPTIONS para preflight (una sola vez, con headers completos)
+// PRIMERO: ruta OPTIONS para preflight (una sola vez, con headers completos)
 $app->options('/{routes:.+}', function (Request $request, Response $response) {
     return $response
         ->withHeader('Access-Control-Allow-Origin', '*')
@@ -27,7 +27,7 @@ $app->options('/{routes:.+}', function (Request $request, Response $response) {
         ->withStatus(200);
 });
 
-// 2️⃣ SEGUNDO: middleware CORS para todas las demás respuestas
+//  SEGUNDO: middleware CORS para todas las demás respuestas
 $app->add(function (Request $request, $handler) {
     $response = $handler->handle($request);
     return $response

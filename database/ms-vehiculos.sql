@@ -1,47 +1,82 @@
-CREATE TABLE vehiculos (
+CREATE TABLE rutas (
 id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-placa VARCHAR(20) NOT NULL UNIQUE,
-tipo_vehiculo VARCHAR(100) NOT NULL,
-capacidad_carga DECIMAL(10,2) NOT NULL,
-modelo VARCHAR(100) NOT NULL,
-marca VARCHAR(100) NOT NULL,
-estado ENUM(
-'disponible',
-'en_ruta',
-'mantenimiento',
-'inactivo'
-) DEFAULT 'disponible',
+ciudad_origen VARCHAR(100) NOT NULL,
+ciudad_destino VARCHAR(100) NOT NULL,
+distancia DECIMAL(10,2) NOT NULL,
+tiempo_estimado VARCHAR(50) NOT NULL,
+observaciones TEXT NULL,
 created_at TIMESTAMP NULL DEFAULT NULL,
 updated_at TIMESTAMP NULL DEFAULT NULL
 );
-INSERT INTO vehiculos (
-placa,
-tipo_vehiculo,
-capacidad_carga,
-modelo,
-marca,
+CREATE TABLE programaciones_viajes (
+id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+conductor_id BIGINT UNSIGNED NOT NULL,
+vehiculo_id BIGINT UNSIGNED NOT NULL,
+ruta_id BIGINT UNSIGNED NOT NULL,
+fecha_salida DATE NOT NULL,
+hora_salida TIME NOT NULL,
+fecha_estimada_llegada DATE NOT NULL,
+observaciones TEXT NULL,
+estado ENUM(
+'programado',
+'en_transito',
+'retrasado',
+'finalizado',
+'cancelado'
+) DEFAULT 'programado',
+created_at TIMESTAMP NULL DEFAULT NULL,
+updated_at TIMESTAMP NULL DEFAULT NULL
+);
+INSERT INTO rutas (
+ciudad_origen,
+ciudad_destino,
+distancia,
+tiempo_estimado,
+observaciones,
+created_at,
+updated_at
+)
+VALUES
+(
+'Bogota',
+'Medellin',
+420,
+'8 horas',
+'Ruta principal nacional',
+NOW(),
+NOW()
+),
+(
+'Tunja',
+'Bogota',
+150,
+'3 horas',
+'Ruta regional',
+NOW(),
+NOW()
+);
+INSERT INTO programaciones_viajes (
+conductor_id,
+vehiculo_id,
+ruta_id,
+fecha_salida,
+hora_salida,
+fecha_estimada_llegada,
+observaciones,
 estado,
 created_at,
 updated_at
 )
 VALUES
 (
-'ABC123',
-'Camion',
-5000,
-'2022',
-'Chevrolet',
-'disponible',
-NOW(),
-NOW()
-),
-(
-'XYZ789',
-'Furgon',
-2500,
-'2021',
-'Renault',
-'disponible',
+1,
+1,
+1,
+'2026-06-15',
+'06:00:00',
+'2026-06-15',
+'Carga de alimentos',
+'programado',
 NOW(),
 NOW()
 );

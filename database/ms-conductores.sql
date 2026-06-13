@@ -1,54 +1,52 @@
-CREATE TABLE conductores (
+CREATE TABLE usuarios (
 id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-nombres VARCHAR(100) NOT NULL,
-apellidos VARCHAR(100) NOT NULL,
-documento VARCHAR(30) NOT NULL UNIQUE,
-telefono VARCHAR(30) NOT NULL,
+nombre VARCHAR(100) NOT NULL,
 correo VARCHAR(150) NOT NULL UNIQUE,
-numero_licencia VARCHAR(50) NOT NULL UNIQUE,
-categoria_licencia VARCHAR(20) NOT NULL,
-fecha_vencimiento_licencia DATE NOT NULL,
-estado ENUM('disponible', 'en_ruta', 'inactivo') DEFAULT 'disponible',
+usuario VARCHAR(50) NOT NULL UNIQUE,
+contrasena VARCHAR(255) NOT NULL,
+rol ENUM('administrador', 'logistica', 'operador') NOT NULL,
+token VARCHAR(255) NULL,
+sesion_activa BOOLEAN DEFAULT FALSE,
+estado ENUM('activo', 'inactivo') DEFAULT 'activo',
 created_at TIMESTAMP NULL DEFAULT NULL,
 updated_at TIMESTAMP NULL DEFAULT NULL
 );
-INSERT INTO conductores (
-nombres,
-apellidos,
-documento,
-telefono,
+INSERT INTO usuarios (
+nombre,
 correo,
-numero_licencia,
-categoria_licencia,
-fecha_vencimiento_licencia,
+usuario,
+contrasena,
+rol,
+token,
+sesion_activa,
 estado,
 created_at,
 updated_at
 )
 VALUES
 (
-'Carlos',
-'Ramirez',
-'1000123456',
-'3001234567',
-'carlos@logitrans.com',
-'LIC-1001',
-'C2',
-'2027-05-10',
-'disponible',
+'Administrador General',
+'admin@logitrans.com',
+'admin',
+'admin123',
+'administrador',
+NULL,
+FALSE,
+'activo',
 NOW(),
 NOW()
 ),
 (
-'Andres',
-'Martinez',
-'1000789456',
-'3014567890',
-'andres@logitrans.com',
-'LIC-1002',
-'C3',
-'2026-12-15',
-'disponible',
+'Operador Logistico',
+'logistica@logitrans.com',
+'logistica',
+'logistica123',
+'logistica',
+NULL,
+FALSE,
+'activo',
 NOW(),
 NOW()
 );
+
+echo password_hash('admin123', PASSWORD_BCRYPT);

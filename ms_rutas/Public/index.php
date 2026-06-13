@@ -59,7 +59,7 @@ $errorMiddleware->setDefaultErrorHandler(function (Request $request, Throwable $
         'error' => $displayErrorDetails ? $exception->getMessage() : 'Error interno'
     ];
 
-    // ✅ Headers CORS también en respuestas de error
+    //  Headers CORS también en respuestas de error
     $response->getBody()->write(json_encode($data));
     return $response
         ->withHeader('Content-Type', 'application/json')

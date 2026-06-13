@@ -38,7 +38,7 @@ $app = AppFactory::create();
 // MIDDLEWARE GLOBAL
 // ============================================================
 
-// 1️⃣ PRIMERO: ruta OPTIONS para preflight (una sola vez, con headers completos)
+// PRIMERO: ruta OPTIONS para preflight (una sola vez, con headers completos)
 $app->options('/{routes:.+}', function (Request $request, Response $response) {
     return $response
         ->withHeader('Access-Control-Allow-Origin', '*')
@@ -48,7 +48,7 @@ $app->options('/{routes:.+}', function (Request $request, Response $response) {
         ->withStatus(200);
 });
 
-// 2️⃣ SEGUNDO: middleware CORS para todas las demás respuestas
+// SEGUNDO: middleware CORS para todas las demás respuestas
 $app->add(function (Request $request, $handler) {
     $response = $handler->handle($request);
     return $response
@@ -58,7 +58,7 @@ $app->add(function (Request $request, $handler) {
         ->withHeader('Access-Control-Max-Age', '3600');
 });
 
-// 3️⃣ TERCERO: error middleware (con headers CORS incluidos)
+// TERCERO: error middleware (con headers CORS incluidos)
 $errorMiddleware = $app->addErrorMiddleware(
     ($_ENV['APP_DEBUG'] ?? 'false') === 'true',
     true,
