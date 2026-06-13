@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-use App\Models\Rutas;
+use App\Models\Ruta;
 use App\Config\Database;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -13,14 +13,25 @@ class RutasController
         Database::init();
     }
 
+    public function health(Request $request, Response $response)
+    {
+        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_rutas operativo', 'timestamp' => date('Y-m-d H:i:s')]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    }
+
     public function index(Request $request, Response $response)
     {
-        $query = Rutas::query();
+        $query = Ruta::query();
+        $params = $request->getQueryParams();
 
-        // filters: ciudad, distancia, etc.
-        $ciudad = $request->getQueryParams()['ciudad'] ?? null;
-        if ($ciudad) {
-            $query->where('ciudad_origen', 'like', "%$ciudad%")->orWhere('ciudad_destino', 'like', "%$ciudad%");
+        if (!empty($params['origen'])) {
+            $query->where('origen', 'like', '%' . $params['origen'] . '%');
+        }
+        if (!empty($params['destino'])) {
+            $query->where('destino', 'like', '%' . $params['destino'] . '%');
+        }
+        if (!empty($params['estado'])) {
+            $query->where('estado', $params['estado']);
         }
 
         $data = $query->get();
@@ -30,12 +41,11 @@ class RutasController
 
     public function show(Request $request, Response $response, $args)
     {
-        $id = $args['id'] ?? null;
-        $ruta = Rutas::find($id);
+        $ruta = Ruta::find($args['id'] ?? null);
         if (!$ruta) {
-            $response->getBody()->write(json_encode(['success' => false, 'message' => 'Ruta no encontrada']));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(404);
+            return $this->error($response, 'Ruta no encontrada', 404);
         }
+
         $response->getBody()->write(json_encode(['success' => true, 'data' => $ruta]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }
@@ -43,45 +53,48 @@ class RutasController
     public function create(Request $request, Response $response)
     {
         $data = json_decode($request->getBody(), true);
-        if (!$data) {
+        if (!$data || empty($data['origen']) || empty($data['destino']) || empty($data['distancia']) || empty($data['tiempo_estimado'])) {
             return $this->error($response, 'Datos inválidos', 400);
         }
 
-        // validations
-        if (empty($data['ciudad_origen']) || empty($data['ciudad_destino'])) {
-            return $this->error($response, 'Ciudades origen y destino son requeridas', 400);
+        if (floatval($data['distancia']) <= 0 || floatval($data['tiempo_estimado']) <= 0) {
+            return $this->error($response, 'Distancia y tiempo deben ser mayores a cero', 400);
         }
 
-        if (!isset($data['distancia']) || floatval($data['distancia']) <= 0) {
-            return $this->error($response, 'Distancia debe ser mayor a cero', 400);
-        }
+        $ruta = Ruta::create([
+            'origen' => $data['origen'],
+            'destino' => $data['destino'],
+            'distancia' => $data['distancia'],
+            'tiempo_estimado' => $data['tiempo_estimado'],
+            'observaciones' => $data['observaciones'] ?? null,
+            'estado' => $data['estado'] ?? 'activa'
+        ]);
 
-        // avoid duplicate route (same origin+destination)
-        $exists = Rutas::where('ciudad_origen', $data['ciudad_origen'])->where('ciudad_destino', $data['ciudad_destino'])->first();
-        if ($exists) {
-            return $this->error($response, 'Ruta duplicada', 409);
-        }
-
-        $ruta = Rutas::create($data);
         $response->getBody()->write(json_encode(['success' => true, 'data' => $ruta]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(201);
     }
 
     public function update(Request $request, Response $response, $args)
     {
-        $id = $args['id'] ?? null;
-        $ruta = Rutas::find($id);
-        if (!$ruta) return $this->error($response, 'Ruta no encontrada', 404);
+        $ruta = Ruta::find($args['id'] ?? null);
+        if (!$ruta) {
+            return $this->error($response, 'Ruta no encontrada', 404);
+        }
 
         $data = json_decode($request->getBody(), true);
-        if (!$data) return $this->error($response, 'Datos inválidos', 400);
+        if (!$data) {
+            return $this->error($response, 'Datos inválidos', 400);
+        }
 
         if (isset($data['distancia']) && floatval($data['distancia']) <= 0) {
             return $this->error($response, 'Distancia debe ser mayor a cero', 400);
         }
 
-        $ruta->fill($data);
-        $ruta->save();
+        if (isset($data['tiempo_estimado']) && floatval($data['tiempo_estimado']) <= 0) {
+            return $this->error($response, 'Tiempo estimado debe ser mayor a cero', 400);
+        }
+
+        $ruta->update($data);
 
         $response->getBody()->write(json_encode(['success' => true, 'data' => $ruta]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
@@ -89,24 +102,19 @@ class RutasController
 
     public function delete(Request $request, Response $response, $args)
     {
-        $id = $args['id'] ?? null;
-        $ruta = Rutas::find($id);
-        if (!$ruta) return $this->error($response, 'Ruta no encontrada', 404);
+        $ruta = Ruta::find($args['id'] ?? null);
+        if (!$ruta) {
+            return $this->error($response, 'Ruta no encontrada', 404);
+        }
 
         $ruta->delete();
         $response->getBody()->write(json_encode(['success' => true, 'message' => 'Ruta eliminada']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }
 
-    public function health(Request $request, Response $response)
-    {
-        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_rutas operativo', 'timestamp' => date('Y-m-d H:i:s')]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    }
-
-    private function error(Response $response, $message, $code)
+    private function error(Response $response, $message, $status)
     {
         $response->getBody()->write(json_encode(['success' => false, 'message' => $message]));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus($code);
+        return $response->withHeader('Content-Type', 'application/json')->withStatus($status);
     }
 }

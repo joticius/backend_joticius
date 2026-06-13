@@ -13,6 +13,12 @@ class VehiculosController
         Database::init();
     }
 
+    public function health(Request $request, Response $response)
+    {
+        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_vehiculos operativo', 'timestamp' => date('Y-m-d H:i:s')]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    }
+
     public function index(Request $request, Response $response)
     {
         $query = Vehiculo::query();
@@ -94,8 +100,7 @@ class VehiculosController
             }
         }
 
-        $vehiculo->fill($data);
-        $vehiculo->save();
+        $vehiculo->update($data);
 
         $response->getBody()->write(json_encode(['success' => true, 'data' => $vehiculo]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
@@ -110,12 +115,6 @@ class VehiculosController
 
         $vehiculo->delete();
         $response->getBody()->write(json_encode(['success' => true, 'message' => 'Vehículo eliminado']));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    }
-
-    public function health(Request $request, Response $response)
-    {
-        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_vehiculos operativo', 'timestamp' => date('Y-m-d H:i:s')]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }
 

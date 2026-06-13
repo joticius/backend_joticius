@@ -1,34 +1,40 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\Viaje;
 use App\Config\Database;
-use App\Models\Viajes;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-class ViajeController
+class ViajesController
 {
     public function __construct()
     {
         Database::init();
     }
 
+    public function health(Request $request, Response $response)
+    {
+        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_viajes operativo', 'timestamp' => date('Y-m-d H:i:s')]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
+    }
+
     public function index(Request $request, Response $response)
     {
-        $query = Viajes::query();
+        $query = Viaje::query();
         $params = $request->getQueryParams();
 
-        if (!empty($params['programacion_viaje_id'])) {
-            $query->where('programacion_viaje_id', $params['programacion_viaje_id']);
+        if (!empty($params['conductor_id'])) {
+            $query->where('conductor_id', $params['conductor_id']);
+        }
+        if (!empty($params['vehiculo_id'])) {
+            $query->where('vehiculo_id', $params['vehiculo_id']);
         }
         if (!empty($params['estado'])) {
             $query->where('estado', $params['estado']);
         }
-        if (!empty($params['fecha'])) {
-            $query->where('fecha', $params['fecha']);
-        }
-        if (!empty($params['novedad'])) {
-            $query->where('novedad', 'like', '%' . $params['novedad'] . '%');
+        if (!empty($params['fecha_salida'])) {
+            $query->whereDate('fecha_salida', $params['fecha_salida']);
         }
 
         $data = $query->get();
@@ -38,9 +44,9 @@ class ViajeController
 
     public function show(Request $request, Response $response, $args)
     {
-        $viaje = Viajes::find($args['id'] ?? null);
+        $viaje = Viaje::find($args['id'] ?? null);
         if (!$viaje) {
-            return $this->error($response, 'Registro de viaje no encontrado', 404);
+            return $this->error($response, 'Viaje no encontrado', 404);
         }
 
         $response->getBody()->write(json_encode(['success' => true, 'data' => $viaje]));
@@ -50,16 +56,19 @@ class ViajeController
     public function create(Request $request, Response $response)
     {
         $data = json_decode($request->getBody(), true);
-        if (!$data || empty($data['programacion_viaje_id']) || empty($data['fecha']) || empty($data['hora']) || empty($data['estado'])) {
-            return $this->error($response, 'Datos inválidos o incompletos', 400);
+        if (!$data || empty($data['conductor_id']) || empty($data['vehiculo_id']) || empty($data['ruta_id']) || empty($data['fecha_salida']) || empty($data['hora_salida'])) {
+            return $this->error($response, 'Datos inválidos', 400);
         }
 
-        $viaje = Viajes::create([
-            'programacion_viaje_id' => $data['programacion_viaje_id'],
-            'fecha' => $data['fecha'],
-            'hora' => $data['hora'],
-            'estado' => $data['estado'],
-            'novedad' => $data['novedad'] ?? null,
+        $viaje = Viaje::create([
+            'conductor_id' => $data['conductor_id'],
+            'vehiculo_id' => $data['vehiculo_id'],
+            'ruta_id' => $data['ruta_id'],
+            'fecha_salida' => $data['fecha_salida'],
+            'hora_salida' => $data['hora_salida'],
+            'fecha_estimada_llegada' => $data['fecha_estimada_llegada'] ?? null,
+            'observaciones' => $data['observaciones'] ?? null,
+            'estado' => $data['estado'] ?? 'programado'
         ]);
 
         $response->getBody()->write(json_encode(['success' => true, 'data' => $viaje]));
@@ -68,9 +77,9 @@ class ViajeController
 
     public function update(Request $request, Response $response, $args)
     {
-        $viaje = Viajes::find($args['id'] ?? null);
+        $viaje = Viaje::find($args['id'] ?? null);
         if (!$viaje) {
-            return $this->error($response, 'Registro de viaje no encontrado', 404);
+            return $this->error($response, 'Viaje no encontrado', 404);
         }
 
         $data = json_decode($request->getBody(), true);
@@ -78,12 +87,7 @@ class ViajeController
             return $this->error($response, 'Datos inválidos', 400);
         }
 
-        if (isset($data['programacion_viaje_id']) && empty($data['programacion_viaje_id'])) {
-            return $this->error($response, 'programacion_viaje_id es requerido', 400);
-        }
-
-        $viaje->fill($data);
-        $viaje->save();
+        $viaje->update($data);
 
         $response->getBody()->write(json_encode(['success' => true, 'data' => $viaje]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
@@ -91,19 +95,13 @@ class ViajeController
 
     public function delete(Request $request, Response $response, $args)
     {
-        $viaje = Viajes::find($args['id'] ?? null);
+        $viaje = Viaje::find($args['id'] ?? null);
         if (!$viaje) {
-            return $this->error($response, 'Registro de viaje no encontrado', 404);
+            return $this->error($response, 'Viaje no encontrado', 404);
         }
 
         $viaje->delete();
-        $response->getBody()->write(json_encode(['success' => true, 'message' => 'Registro eliminado']));
-        return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
-    }
-
-    public function health(Request $request, Response $response)
-    {
-        $response->getBody()->write(json_encode(['success' => true, 'message' => 'ms_viajes operativo', 'timestamp' => date('Y-m-d H:i:s')]));
+        $response->getBody()->write(json_encode(['success' => true, 'message' => 'Viaje eliminado']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
     }
 

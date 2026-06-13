@@ -1,15 +1,15 @@
 <?php
 
-use App\Controllers\ViajeController;
+use App\Controllers\ViajesController;
 use Slim\App;
 
 return function (App $app) {
-    $controller = new ViajeController();
+    $controller = new ViajesController();
 
-    $app->get('/', [$controller, 'health']);
-    $app->get('/viajes', [$controller, 'index']);
-    $app->get('/viajes/{id}', [$controller, 'show']);
-    $app->post('/viajes', [$controller, 'create']);
-    $app->put('/viajes/{id}', [$controller, 'update']);
-    $app->delete('/viajes/{id}', [$controller, 'delete']);
+    $app->get('/api/viajes/health', [$controller, 'health']);
+    $app->get('/api/viajes', [$controller, 'index']);
+    $app->get('/api/viajes/{id}', [$controller, 'show']);
+    $app->post('/api/viajes', [$controller, 'create']);
+    $app->put('/api/viajes/{id}', [$controller, 'update']);
+    $app->delete('/api/viajes/{id}', [$controller, 'delete']);
 };

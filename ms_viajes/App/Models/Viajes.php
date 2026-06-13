@@ -3,16 +3,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Viajes extends Model
+class Viaje extends Model
 {
-    protected $table = 'seguimientos_viajes';
-    protected $fillable = [
-        'programacion_viaje_id',
-        'fecha',
-        'hora',
-        'estado',
-        'novedad'
-    ];
-
+    protected $table = 'viajes';
+    protected $fillable = ['conductor_id', 'vehiculo_id', 'ruta_id', 'fecha_salida', 'hora_salida', 'fecha_estimada_llegada', 'observaciones', 'estado'];
     public $timestamps = true;
 }
